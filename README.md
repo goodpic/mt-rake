@@ -18,6 +18,10 @@ How to use
 % rake mt:pull
 ```
 
+Author
+-------
+Jun Kaneko
+
 License
 -------
 Distributed under the MIT License.
