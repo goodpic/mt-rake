@@ -17,16 +17,19 @@ CGIPath         /
 StaticWebPath   /mt-static/
 StaticFilePath  /PATH/TO/mt-static
 ObjectDriver    DBI::mysql
-DBUser          root
-DBPassword      root
 DBHost          localhost
+DBPort          8889
+DBSocket        /Applications/MAMP/tmp/mysql/mysql.sock
+Database        YOUR_DB_NAME
+DBUser          YOUR_DB_USER_NAME
+DBPassword      YOUR_DB_PASSWORD
 ImageDriver     Imager
 SendMailPath    /usr/sbin/sendmail
 DefaultLanguage ja
 EOS
 end
 
-# Parse MT_CONFIG as a hash array
+# Parse MT_CONFIG as a hash
 params = {}
 MT_CONFIG.each_line {|line|
   param = line.split(" ")
@@ -44,7 +47,6 @@ params.each_pair {|key,value|
     end
   end
 }
-
 
 directory DEPLOY_DIR
 directory REPO_LOCAL
