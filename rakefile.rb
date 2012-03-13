@@ -1,15 +1,50 @@
+# -*- coding: utf-8 -*-
 # You can write your configuration in config.rb or here
 begin
   load "./config.rb"
   puts "config.rb was found."
 rescue LoadError
   puts "config.rb was not found."
+  
+  # Git information
   REPO_REMOTE = "git@github.com:movabletype/movabletype.git"
   REPO_LOCAL  = ""
   DEPLOY_DIR  = ""
-  MYUSER = ""
-  MYPASS = ""
+  
+  # Your MT settings in mt-config.cgi
+  MT_CONFIG = <<EOS
+CGIPath         /
+StaticWebPath   /mt-static/
+StaticFilePath  /PATH/TO/mt-static
+ObjectDriver    DBI::mysql
+DBUser          root
+DBPassword      root
+DBHost          localhost
+ImageDriver     Imager
+SendMailPath    /usr/sbin/sendmail
+DefaultLanguage ja
+EOS
 end
+
+# Parse MT_CONFIG as a hash array
+params = {}
+MT_CONFIG.each_line {|line|
+  param = line.split(" ")
+  params[param[0]] = param[1]
+}
+
+# Create a mysql command to create/backup database
+db_options  = ""
+params.each_pair {|key,value|
+  if key =~ /^DB(.*)/
+    if $1 == "Password"
+      db_options << "-p#{value} "
+    else
+      db_options << "--#{$1.downcase}=#{value} "
+    end
+  end
+}
+
 
 directory DEPLOY_DIR
 directory REPO_LOCAL
@@ -48,18 +83,23 @@ namespace :mt do
     end
     puts "Deployed to #{DEPLOY_DIR}"
   end
-
 end
-
 
 namespace :mysql do
-  desc "create database, specify dbname by ARG[1]"
+  desc "Create database, specify dbname by ARG[1]"
   task :create,[:dbname] => REPO_LOCAL do |t, args|
     args.with_defaults(:dbname => "test")
-    sh "mysql -u #{MYUSER} -p#{MYPASS} -e \"create database IF NOT EXISTS #{args.dbname}\""
+    params['Database'] = "mt_" << args.dbname unless params['Database']
+    sh "mysql " << db_options << "-e \"create database IF NOT EXISTS #{params['Database']}\""
+  end
+
+  desc "Backup your current database specified by Database attribute in mt-config.cgi"
+  task :backup do |t, arg|
+    if params['Database']
+      sh "mysqldump -a --default-character-set=binary " << db_options << " #{params['Database']} > #{params['Database']}." << Time.now.strftime("%Y-%m-%d-%H-%M-%S.sql") 
+    end
   end
 end
-
 
 desc "The default task"
 task :my_task do
