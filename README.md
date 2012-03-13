@@ -6,15 +6,17 @@ This is simple ruby rake tasks to clone/checkout/pull, and make install Movable 
 Requirements
 -------
 
-You need to command line terminal with ruby rake and git client.
+You need a command line terminal with ruby rake and git client.
 
 
 How to use
 -------
 
+```bsh
 % rake mt:co
-% rake mt:pull
 
+% rake mt:pull
+```
 
 License
 -------
